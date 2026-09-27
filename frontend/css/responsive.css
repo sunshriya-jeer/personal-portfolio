@@ -1,0 +1,248 @@
+/* ==========================================================================
+   RESPONSIVE DESIGN STYLESHEET
+   Mobile-First & Breakpoint Adaptations
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Large Tablets / Medium Screens (<= 1024px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 1024px) {
+  .section {
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-grid {
+    gap: var(--space-xl);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Mobile & Tablets (<= 768px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 768px) {
+  :root {
+    --header-height: 64px;
+    --font-size-5xl: 2.5rem;
+    --font-size-4xl: 2rem;
+    --font-size-3xl: 1.75rem;
+    --font-size-2xl: 1.35rem;
+  }
+
+  /* Show mobile hamburger toggle */
+  .menu-toggle-btn {
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* Animated Hamburger to "X" transformation */
+  .menu-toggle-btn.is-active .hamburger-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .menu-toggle-btn.is-active .hamburger-bar:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-toggle-btn.is-active .hamburger-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Mobile Navigation Drawer / Dropdown */
+  .nav-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-lg);
+    gap: var(--space-lg);
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    
+    /* Hidden state */
+    display: none;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity var(--transition-normal), transform var(--transition-normal);
+  }
+
+  .nav-menu.is-active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .nav-list {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    width: 100%;
+  }
+
+  .nav-item {
+    width: 100%;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: var(--space-md) 0;
+    font-size: var(--font-size-base);
+  }
+
+  .nav-link.active::after {
+    display: none;
+  }
+
+  .nav-link.active {
+    color: var(--accent-primary);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .nav-actions {
+    width: 100%;
+    padding-top: var(--space-xs);
+  }
+
+  .nav-actions .btn {
+    width: 100%;
+  }
+
+  /* Hero Section Mobile Adjustments */
+  .hero-section {
+    min-height: auto;
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-3xl);
+  }
+
+  .hero-name {
+    font-size: var(--font-size-4xl);
+  }
+
+  .hero-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .hero-description {
+    font-size: var(--font-size-base);
+  }
+
+  /* About Grid Mobile (Single Column) */
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  .about-media {
+    order: -1; /* Show avatar/placeholder above narrative or center */
+    margin-bottom: var(--space-md);
+  }
+
+  .about-image-wrapper {
+    max-width: 220px;
+  }
+
+  /* Skills Grid Mobile (Single Column) */
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Projects Grid Mobile (Single Column) */
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Certifications Grid Mobile */
+  .certifications-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Contact Grid Mobile (Single Column) */
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  .contact-form-wrapper {
+    padding: var(--space-md);
+  }
+
+  /* Footer Mobile */
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-lg);
+  }
+
+  .back-to-top-link {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. Small Mobile Devices (<= 480px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 480px) {
+  .container {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .hero-name {
+    font-size: 2.25rem;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-cta-group .btn {
+    width: 100%;
+  }
+
+  .hero-social-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .about-highlights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .section-line {
+    display: none; /* Hide line if screen is very tight */
+  }
+
+  .timeline-header {
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .cert-card {
+    flex-direction: column;
+  }
+}
