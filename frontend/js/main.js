@@ -207,8 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (subjectInput) subjectInput.addEventListener('input', () => clearInputError(subjectInput, 'subject-error'));
     if (messageInput) messageInput.addEventListener('input', () => clearInputError(messageInput, 'message-error'));
 
-    contactForm.addEventListener('submit', (e) => {
+    const submitBtn = document.getElementById('contact-submit-btn');
+    let isSubmitting = false;
+
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (isSubmitting) return;
 
       let isValid = true;
 
@@ -257,16 +262,60 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Successful Client Validation Feedback
-      // Note: Backend endpoint will be integrated in Phase 2.
-      if (formStatusAlert) {
-        formStatusAlert.hidden = false;
-        formStatusAlert.className = 'form-status-alert is-success';
-        formStatusAlert.textContent = 'Thank you! Your message form passed client validation. (Backend API dispatch will be connected in Phase 2).';
+      // Prepare payload: name, email, message
+      const payload = {
+        name: nameInput.value.trim(),
+        email: emailInput.value.trim(),
+        message: messageInput.value.trim()
+      };
+
+      // Set Submitting State
+      isSubmitting = true;
+      let originalBtnHTML = '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>Sending Message...</span>';
       }
 
-      // Reset Form fields
-      contactForm.reset();
+      if (formStatusAlert) {
+        formStatusAlert.hidden = false;
+        formStatusAlert.className = 'form-status-alert';
+        formStatusAlert.textContent = 'Sending message...';
+      }
+
+      try {
+        if (!window.PortfolioAPI || typeof window.PortfolioAPI.sendContactMessage !== 'function') {
+          throw new Error('API client is not available.');
+        }
+
+        const result = await window.PortfolioAPI.sendContactMessage(payload);
+
+        // Success state
+        if (formStatusAlert) {
+          formStatusAlert.hidden = false;
+          formStatusAlert.className = 'form-status-alert is-success';
+          formStatusAlert.textContent = result && result.message ? result.message : 'Thank you! Your message has been sent successfully.';
+        }
+
+        // Reset form ONLY on success
+        contactForm.reset();
+      } catch (err) {
+        // Error state
+        if (formStatusAlert) {
+          formStatusAlert.hidden = false;
+          formStatusAlert.className = 'form-status-alert is-error';
+          formStatusAlert.textContent = err.message || 'Unable to send message. Please try again later.';
+        }
+      } finally {
+        isSubmitting = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          if (originalBtnHTML) {
+            submitBtn.innerHTML = originalBtnHTML;
+          }
+        }
+      }
     });
   }
 

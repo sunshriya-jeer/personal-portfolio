@@ -2,16 +2,16 @@
  * projects.js - Project Cards Renderer & State Management
  * 
  * ARCHITECTURE NOTE:
- * Structured for future dynamic project rendering when connected to the backend API.
- * Currently, no database or backend API is required. The semantic HTML in index.html
- * displays placeholder project cards. This module provides the templating logic,
- * security escaping, and dynamic initialization hooks for Phase 2.
+ * Structured for dynamic project rendering connected to the backend Projects API.
+ * Fetches real projects from MongoDB via PortfolioAPI.getProjects(), rendering them
+ * into the semantic project-card structure while preserving safe fallback to local
+ * data if the backend server is unreachable.
  */
 
 const ProjectsManager = (() => {
   /**
-   * Structured Project Data for the portfolio.
-   * Can later be supplemented or replaced by remote data from PortfolioAPI.getProjects().
+   * Structured fallback Project Data for the portfolio.
+   * Used if the backend API is unreachable or returns empty data.
    */
   const DEFAULT_PROJECTS = [
     {
@@ -37,7 +37,7 @@ const ProjectsManager = (() => {
       title: 'Evidence AI',
       type: 'AI Web Application',
       description: 'A web application designed to help users analyze claims and find supporting evidence or relevant sources, streamlining evidence-based research and reducing manual search time across multiple sources. Workflow: User enters a claim → AI analyzes the claim → Relevant evidence is identified → Results are presented.',
-      githubUrl: null, // Project has not been pushed to GitHub yet
+      githubUrl: null,
       liveDemoUrl: null,
       tags: ['HTML', 'CSS', 'JavaScript', 'AI/ML', 'API Integration', 'Web Technologies']
     }
@@ -60,25 +60,41 @@ const ProjectsManager = (() => {
 
   /**
    * Generates markup for an individual project card.
-   * Matches the semantic structure defined in index.html.
+   * Matches the semantic structure defined in index.html and style.css.
    * 
    * @param {Object} project
    * @returns {string} HTML string
    */
   function createProjectCardHTML(project) {
     const title = escapeHTML(project.title || '');
-    const type = escapeHTML(project.type || '');
+    const type = escapeHTML(project.type || (project.featured ? 'Featured Project' : ''));
     const description = escapeHTML(project.description || '');
-    const githubUrl = project.githubUrl ? escapeHTML(project.githubUrl) : '';
-    const liveDemoUrl = project.liveDemoUrl && project.liveDemoUrl !== '#' ? escapeHTML(project.liveDemoUrl) : '';
-    const tags = Array.isArray(project.tags) ? project.tags : [];
 
-    const tagsHTML = tags
-      .map(tag => `<li class="badge">${escapeHTML(tag)}</li>`)
+    // Validate URLs strictly: non-empty string, not '#'
+    const rawGithub = project.githubUrl;
+    const githubUrl = rawGithub && typeof rawGithub === 'string' && rawGithub.trim() !== ''
+      ? escapeHTML(rawGithub.trim())
+      : '';
+
+    const rawLive = project.liveUrl || project.liveDemoUrl;
+    const liveDemoUrl = rawLive && typeof rawLive === 'string' && rawLive.trim() !== '' && rawLive.trim() !== '#'
+      ? escapeHTML(rawLive.trim())
+      : '';
+
+    // Extract technologies from MongoDB array or fallback tags array
+    const rawTags = Array.isArray(project.technologies)
+      ? project.technologies
+      : (Array.isArray(project.tags) ? project.tags : []);
+
+    const tagsHTML = rawTags
+      .filter(tag => tag && typeof tag === 'string')
+      .map(tag => `<li class="badge">${escapeHTML(tag.trim())}</li>`)
       .join('');
 
+    const projectId = escapeHTML(project._id || project.id || '');
+
     return `
-      <article class="card project-card" data-project-id="${escapeHTML(project.id || '')}">
+      <article class="card project-card" data-project-id="${projectId}">
         <div class="project-header">
           <div class="project-type">${type}</div>
           <div class="project-actions">
@@ -110,6 +126,19 @@ const ProjectsManager = (() => {
   }
 
   /**
+   * Displays a simple loading state indicator while projects are being fetched.
+   */
+  function showLoading() {
+    const container = document.getElementById('projects-container');
+    if (!container) return;
+    container.innerHTML = `
+      <div class="projects-status-message" role="status" aria-live="polite" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: var(--space-xl) 0; font-family: var(--font-mono); font-size: var(--font-size-sm);">
+        Loading projects...
+      </div>
+    `;
+  }
+
+  /**
    * Renders a list of projects into the DOM container.
    * @param {Array<Object>} projectsList 
    */
@@ -126,20 +155,25 @@ const ProjectsManager = (() => {
 
   /**
    * Initializes the projects component.
-   * Checks for remote projects from PortfolioAPI, falling back to structured default data.
+   * Displays loading state, fetches remote projects from PortfolioAPI,
+   * and falls back cleanly to local data if the API request fails.
    */
   async function init() {
+    showLoading();
+
     try {
-      const remoteProjects = await window.PortfolioAPI?.getProjects();
-      if (remoteProjects && Array.isArray(remoteProjects) && remoteProjects.length > 0) {
-        renderProjects(remoteProjects);
-        return;
+      if (window.PortfolioAPI && typeof window.PortfolioAPI.getProjects === 'function') {
+        const remoteProjects = await window.PortfolioAPI.getProjects();
+        if (remoteProjects && Array.isArray(remoteProjects) && remoteProjects.length > 0) {
+          renderProjects(remoteProjects);
+          return;
+        }
       }
     } catch (err) {
-      console.info('[ProjectsManager] Remote projects fetch caught, falling back to local data:', err);
+      console.warn('[ProjectsManager] Remote projects fetch failed. Falling back to local data:', err);
     }
 
-    // Default to structured project data
+    // Fallback to structured default data
     renderProjects(DEFAULT_PROJECTS);
   }
 

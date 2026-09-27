@@ -2,19 +2,17 @@
  * api.js - REST API Client Foundation
  * 
  * ARCHITECTURE NOTE:
- * This module is prepared for future Phase 2 REST API communication with the Node.js/Express backend.
- * Currently, no backend server or database is running.
+ * This module manages REST API communication with the Node.js/Express backend.
  * All functions are structured with async/await patterns, error handling wrappers,
- * and clean placeholder endpoints ready to be activated once the backend is developed.
+ * and clean endpoints.
  */
 
 const PortfolioAPI = (() => {
-  // Base URL placeholder for future backend server
+  // Base URL for backend server
   const API_BASE_URL = 'http://localhost:5000/api';
 
   /**
-   * Helper function for future HTTP requests.
-   * Currently mocked to prevent unhandled network failures.
+   * Helper function for HTTP requests.
    * 
    * @param {string} endpoint - API route (e.g. '/projects')
    * @param {object} options - Fetch options (method, headers, body)
@@ -23,8 +21,6 @@ const PortfolioAPI = (() => {
   async function request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    // In Phase 2: uncomment this actual fetch call when backend is live:
-    /*
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -39,10 +35,6 @@ const PortfolioAPI = (() => {
     }
 
     return await response.json();
-    */
-
-    console.info(`[PortfolioAPI] request queued for "${url}". Backend not connected yet (Foundation Phase).`);
-    return null;
   }
 
   /**
@@ -50,7 +42,14 @@ const PortfolioAPI = (() => {
    * @returns {Promise<Array|null>}
    */
   async function getProjects() {
-    return await request('/projects', { method: 'GET' });
+    const result = await request('/projects', { method: 'GET' });
+    if (result && Array.isArray(result.data)) {
+      return result.data;
+    }
+    if (Array.isArray(result)) {
+      return result;
+    }
+    return null;
   }
 
   /**
