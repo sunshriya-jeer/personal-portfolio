@@ -9,7 +9,7 @@
 
 const PortfolioAPI = (() => {
   // Base URL for backend server
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const API_BASE_URL = 'https://personal-portfolio-api-five.vercel.app/api';
 
   /**
    * Helper function for HTTP requests.
