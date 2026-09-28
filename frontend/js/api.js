@@ -64,7 +64,10 @@ const PortfolioAPI = (() => {
     });
   }
 
+  console.info(`[PortfolioAPI] Active backend API: ${API_BASE_URL}`);
+
   return {
+    API_BASE_URL,
     getProjects,
     sendContactMessage
   };
