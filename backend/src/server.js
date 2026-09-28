@@ -10,10 +10,42 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // CORS Configuration
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+const configuredOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, '')).filter(Boolean)
+  : [];
+
+const localOrigins = [
+  'http://localhost:8080',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:5173',
+  'http://127.0.0.1:8080',
+  'http://127.0.0.1:5500',
+  'http://127.0.0.1:3000'
+];
+
+// Matches production and preview Vercel deployments for this personal portfolio
+const vercelPattern = /^https:\/\/(personal-portfolio(-[a-z0-9-]+)?-sunshriya-portfolio|personal-portfolio(-[a-z0-9-]+)?)\.vercel\.app$/i;
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true;
+  if (configuredOrigins.includes(origin)) return true;
+  if (localOrigins.includes(origin)) return true;
+  if (vercelPattern.test(origin)) return true;
+  return false;
+};
+
 app.use(cors({
-  origin: frontendUrl,
-  credentials: true
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body Parser Middleware
