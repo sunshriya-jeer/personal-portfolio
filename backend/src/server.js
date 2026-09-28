@@ -21,8 +21,19 @@ app.use(express.json());
 
 const mongoose = require('mongoose');
 
+// Root Endpoint for deployment verification
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'Portfolio Backend API is running'
+  });
+});
+
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  if (mongoose.connection.readyState === 0 && process.env.MONGODB_URI) {
+    await connectDB().catch(() => {});
+  }
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.status(200).json({
     status: 'OK',
@@ -58,6 +69,11 @@ const startServer = async () => {
   return server;
 };
 
-startServer();
+// Only listen directly when running in a standalone Node process (not in serverless/Vercel)
+if (require.main === module) {
+  startServer();
+}
 
-module.exports = { app, server };
+module.exports = app;
+module.exports.app = app;
+module.exports.startServer = startServer;
